@@ -1,0 +1,5 @@
+# Secrets - never commit this
+.env
+
+# Server data volume (managed outside this repo)
+../enshrouded/
