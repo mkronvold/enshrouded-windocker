@@ -104,9 +104,9 @@ function Write-ServerConfig {
         queryPort           = [int](Get-Env 'QUERY_PORT' '15637')
         slotCount           = [int](Get-Env 'SLOT_COUNT' '16')
         tags                = @()
-        voiceChatMode       = "Proximity"
-        enableVoiceChat     = $false
-        enableTextChat      = $false
+        voiceChatMode       = Get-Env     'VOICE_CHAT_MODE' 'Proximity'
+        enableVoiceChat     = Get-BoolEnv 'ENABLE_VOICE_CHAT' $false
+        enableTextChat      = Get-BoolEnv 'ENABLE_TEXT_CHAT' $false
         gameSettingsPreset  = "Custom"
         gameSettings     = [ordered]@{
             playerHealthFactor                = Get-FloatEnv 'PLAYER_HEALTH_FACTOR' 1.0
