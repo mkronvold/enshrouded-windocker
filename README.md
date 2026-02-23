@@ -24,13 +24,13 @@ git clone https://github.com/mkronvold/enshrouded-windocker.git
 cd enshrouded-windocker
 ```
 
-### 2. Create your secrets file
+### 2. Create your configuration file
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Edit `.env` with your passwords and Discord webhook URL (see [Secrets](#secrets-env)).
+Edit `.env` with your server name, passwords, Discord webhook URL, and any game settings you want to change (see [Configuration](#configuration)).
 
 ### 3. Directory structure
 
@@ -74,22 +74,29 @@ Look for `Session` output confirming the server is listening.
 
 ## Configuration
 
-### Secrets (`.env`)
+All configuration lives in `.env` — the `docker-compose.yml` is clean and requires no edits.  
+Changes to `.env` take effect on the next container start without rebuilding the image:
 
-These values are **never committed** to source control. Copy `.env.example` to `.env` and fill in your values.
+```powershell
+docker compose up -d --force-recreate
+```
+
+Copy `.env.example` to `.env` to get started. The example file documents every variable with its valid values.
+
+### Secrets & Passwords
+
+These must be kept out of source control. They live **only** in `.env` (gitignored).
 
 | Variable | Description |
 |---|---|
 | `WEBHOOK_URL` | Discord webhook URL for server notifications. Leave blank to disable. |
-| `SET_GROUP_DEFAULT_PASSWORD` | Password required to connect at all. Anyone who connects without a higher-role password lands here. |
+| `SET_GROUP_DEFAULT_PASSWORD` | Password required to connect at all. Anyone who connects without a higher-role password lands here. Leave blank for open access. |
 | `SET_GROUP_VISITOR_PASSWORD` | Password to join as Visitor. Leave blank to disable this role. |
 | `SET_GROUP_HELPER_PASSWORD` | Password to join as Helper. Leave blank to disable this role. |
 | `SET_GROUP_FRIEND_PASSWORD` | Password to join as Friend. Leave blank to disable this role. |
 | `SET_GROUP_ADMIN_PASSWORD` | Password to join as Admin. Leave blank to disable this role. |
 
-### Server Settings (`docker-compose.yml`)
-
-#### General
+### General
 
 | Variable | Default | Description |
 |---|---|---|
@@ -104,7 +111,7 @@ These values are **never committed** to source control. Copy `.env.example` to `
 | `SCHEDULED_RESTART` | `true` | Restart the server on a schedule. |
 | `SCHEDULED_RESTART_SCHEDULE` | `0 4 * * *` | Cron schedule for scheduled restart (default: 4:00 AM daily). |
 
-#### Chat
+### Chat
 
 | Variable | Default | Valid Values | Description |
 |---|---|---|---|
@@ -112,7 +119,7 @@ These values are **never committed** to source control. Copy `.env.example` to `
 | `ENABLE_VOICE_CHAT` | `false` | `true`, `false` | Enable in-game proximity voice chat. |
 | `VOICE_CHAT_MODE` | `Proximity` | `Proximity`, `Global` | Whether voice is proximity-based or server-wide. |
 
-#### Player
+### Player
 
 | Variable | Default | Valid Values | Description |
 |---|---|---|---|
@@ -124,9 +131,9 @@ These values are **never committed** to source control. Copy `.env.example` to `
 | `ENABLE_DURABILITY` | `true` | `true`, `false` | Whether equipment takes durability damage. |
 | `ENABLE_STARVING_DEBUFF` | `false` | `true`, `false` | Whether players receive a debuff when starving. |
 | `FOOD_BUFF_DURATION_FACTOR` | `1.0` | float > 0 | Duration multiplier for food buffs. |
-| `FROM_HUNGER_TO_STARVING` | `600000000000` | integer (nanoseconds) | Time in nanoseconds before hunger becomes starvation. Default is ~10 minutes. |
+| `FROM_HUNGER_TO_STARVING` | `600000000000` | integer (nanoseconds) | Time before hunger becomes starvation. Default is ~10 minutes. |
 
-#### World
+### World
 
 | Variable | Default | Valid Values | Description |
 |---|---|---|---|
@@ -139,7 +146,7 @@ These values are **never committed** to source control. Copy `.env.example` to `
 | `DAY_TIME_DURATION` | `1800000000000` | integer (nanoseconds) | Length of daytime. Default is 30 minutes. |
 | `NIGHT_TIME_DURATION` | `720000000000` | integer (nanoseconds) | Length of nighttime. Default is 12 minutes. |
 
-#### Economy & Progression
+### Economy & Progression
 
 | Variable | Default | Valid Values | Description |
 |---|---|---|---|
@@ -147,31 +154,31 @@ These values are **never committed** to source control. Copy `.env.example` to `
 | `PLANT_GROWTH_SPEED_FACTOR` | `1.0` | float > 0 | Speed of crop growth. |
 | `RESOURCE_DROP_STACK_AMOUNT_FACTOR` | `1.0` | float > 0 | Stack size multiplier for dropped resources. |
 | `FACTORY_PRODUCTION_SPEED_FACTOR` | `1.0` | float > 0 | Crafting station speed multiplier. |
-| `PERK_UPGRADE_RECYCLING_FACTOR` | `0.8` | 0.0 – 1.0 | Fraction of skill points returned when respeccing. |
+| `PERK_UPGRADE_RECYCLING_FACTOR` | `0.5` | 0.0 – 1.0 | Fraction of skill points returned when respeccing. |
 | `PERK_COST_FACTOR` | `1.0` | float > 0 | Multiplier for skill point costs. |
 | `EXPERIENCE_COMBAT_FACTOR` | `1.0` | float > 0 | XP multiplier from combat. |
 | `EXPERIENCE_MINING_FACTOR` | `1.0` | float > 0 | XP multiplier from mining. |
 | `EXPERIENCE_EXPLORATION_QUESTS_FACTOR` | `1.0` | float > 0 | XP multiplier from exploration and quests. |
 
-#### Enemies
+### Enemies
 
 | Variable | Default | Valid Values | Description |
 |---|---|---|---|
-| `RANDOM_SPAWNER_AMOUNT` | `Many` | `Few`, `Normal`, `Many`, `Extreme` | Overall enemy density. |
+| `RANDOM_SPAWNER_AMOUNT` | `Normal` | `Few`, `Normal`, `Many`, `Extreme` | Overall enemy density. |
 | `AGGRO_POOL_AMOUNT` | `Normal` | `Few`, `Normal`, `Many`, `Extreme` | How many enemies can be simultaneously aggro'd. |
 | `ENEMY_DAMAGE_FACTOR` | `1.0` | float > 0 | Enemy outgoing damage multiplier. |
-| `ENEMY_HEALTH_FACTOR` | `1.5` | float > 0 | Enemy health multiplier. |
-| `ENEMY_STAMINA_FACTOR` | `0.6` | float > 0 | Enemy stamina multiplier. |
+| `ENEMY_HEALTH_FACTOR` | `1.0` | float > 0 | Enemy health multiplier. |
+| `ENEMY_STAMINA_FACTOR` | `1.0` | float > 0 | Enemy stamina multiplier. |
 | `ENEMY_PERCEPTION_RANGE_FACTOR` | `1.0` | float > 0 | Enemy detection range multiplier. |
 | `BOSS_DAMAGE_FACTOR` | `1.0` | float > 0 | Boss outgoing damage multiplier. |
-| `BOSS_HEALTH_FACTOR` | `2.0` | float > 0 | Boss health multiplier. |
+| `BOSS_HEALTH_FACTOR` | `1.0` | float > 0 | Boss health multiplier. |
 | `THREAT_BONUS` | `1.0` | float > 0 | Multiplier for threat/aggro generation. |
 | `PACIFY_ALL_ENEMIES` | `false` | `true`, `false` | If `true`, all enemies are passive. |
 | `TAMING_STARTLE_REPERUSSION` | `LoseSomeProgress` | `LoseSomeProgress`, `LoseAllProgress`, `Nothing` | Consequence when a taming attempt is interrupted. |
 
-#### User Groups (Permissions)
+### User Group Permissions
 
-Each role (Default, Visitor, Helper, Friend, Admin) can be independently configured. Passwords are set in `.env`. Permission flags are set in `docker-compose.yml`.
+Each role (Default, Visitor, Helper, Friend, Admin) can be independently configured. Passwords are in the Secrets section above.
 
 | Variable | Default | Description |
 |---|---|---|
@@ -214,13 +221,13 @@ docker compose up -d --force-recreate
 ### Force a game server update immediately
 ```powershell
 docker compose down
-# Set UPDATE_ON_START=true in docker-compose.yml (it is true by default)
+# Ensure UPDATE_ON_START=true in .env (it is true by default)
 docker compose up -d
 ```
-Or to skip SteamCMD on every start after the first install, set `UPDATE_ON_START: "false"` — the auto-update schedule will still apply.
+Or set `UPDATE_ON_START=false` in `.env` to skip the SteamCMD check on every start — the auto-update schedule will still apply.
 
 ### Apply config changes without rebuilding
-Config changes in `docker-compose.yml` or `.env` only require a container restart — no image rebuild needed:
+All settings are in `.env`. Changes only require a container restart — no image rebuild needed:
 ```powershell
 docker compose up -d --force-recreate
 ```
