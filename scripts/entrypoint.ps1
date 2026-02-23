@@ -49,9 +49,10 @@ function Build-UserGroups {
     $groups = @(
         [ordered]@{
             name                 = "Default"
-            password             = ""
+            password             = (Get-Env "SET_GROUP_DEFAULT_PASSWORD" "")
             canKickBan           = $false
             canAccessInventories = $true
+            canEditWorld         = $true
             canEditBase          = $true
             canExtendBase        = $true
             reservedSlots        = 0
@@ -66,6 +67,7 @@ function Build-UserGroups {
                 password             = $pw
                 canKickBan           = (Get-BoolEnv "SET_GROUP_${gname}_CAN_KICK_BAN" $false)
                 canAccessInventories = (Get-BoolEnv "SET_GROUP_${gname}_CAN_ACCESS_INVENTORIES" $true)
+                canEditWorld         = $true
                 canEditBase          = $true
                 canExtendBase        = $true
                 reservedSlots        = 0
@@ -80,6 +82,7 @@ function Build-UserGroups {
 function Fix-JsonFloats([string]$json) {
     # PowerShell ConvertTo-Json serializes 1.0 as 1; Enshrouded expects floats
     $floatFields = 'playerHealthFactor|playerManaFactor|playerStaminaFactor|playerBodyHeatFactor|' +
+                   'playerDivingTimeFactor|' +
                    'foodBuffDurationFactor|shroudTimeFactor|miningDamageFactor|plantGrowthSpeedFactor|' +
                    'resourceDropStackAmountFactor|factoryProductionSpeedFactor|perkUpgradeRecyclingFactor|' +
                    'perkCostFactor|experienceCombatFactor|experienceMiningFactor|experienceExplorationQuestsFactor|' +
@@ -100,6 +103,7 @@ function Write-ServerConfig {
         ip                  = "0.0.0.0"
         queryPort           = [int](Get-Env 'QUERY_PORT' '15637')
         slotCount           = [int](Get-Env 'SLOT_COUNT' '16')
+        tags                = @()
         voiceChatMode       = "Proximity"
         enableVoiceChat     = $false
         enableTextChat      = $false
@@ -109,6 +113,7 @@ function Write-ServerConfig {
             playerManaFactor                  = Get-FloatEnv 'PLAYER_MANA_FACTOR' 1.0
             playerStaminaFactor               = Get-FloatEnv 'PLAYER_STAMINA_FACTOR' 1.0
             playerBodyHeatFactor              = Get-FloatEnv 'PLAYER_BODY_HEAT_FACTOR' 1.0
+            playerDivingTimeFactor            = Get-FloatEnv 'PLAYER_DIVING_TIME_FACTOR' 1.0
             enableDurability                  = Get-BoolEnv  'ENABLE_DURABILITY' $true
             enableStarvingDebuff              = Get-BoolEnv  'ENABLE_STARVING_DEBUFF' $false
             foodBuffDurationFactor            = Get-FloatEnv 'FOOD_BUFF_DURATION_FACTOR' 1.0
@@ -117,6 +122,7 @@ function Write-ServerConfig {
             tombstoneMode                     = Get-Env      'TOMBSTONE_MODE' 'AddBackpackMaterials'
             enableGliderTurbulences           = Get-BoolEnv  'ENABLE_GLIDER_TURBULENCES' $true
             weatherFrequency                  = Get-Env      'WEATHER_FREQUENCY' 'Normal'
+            fishingDifficulty                 = Get-Env      'FISHING_DIFFICULTY' 'Normal'
             miningDamageFactor                = Get-FloatEnv 'MINING_DAMAGE_FACTOR' 1.0
             plantGrowthSpeedFactor            = Get-FloatEnv 'PLANT_GROWTH_SPEED_FACTOR' 1.0
             resourceDropStackAmountFactor     = Get-FloatEnv 'RESOURCE_DROP_STACK_AMOUNT_FACTOR' 1.0
@@ -139,9 +145,11 @@ function Write-ServerConfig {
             tamingStartleRepercussion         = Get-Env      'TAMING_STARTLE_REPERUSSION' 'LoseSomeProgress'
             dayTimeDuration                   = Get-LongEnv  'DAY_TIME_DURATION' 1800000000000
             nightTimeDuration                 = Get-LongEnv  'NIGHT_TIME_DURATION' 720000000000
+            curseModifier                     = Get-Env      'CURSE_MODIFIER' 'Normal'
         }
-        userGroups = @(Build-UserGroups)
-        gamePort   = [int](Get-Env 'GAME_PORT' '15636')
+        userGroups     = @(Build-UserGroups)
+        gamePort       = [int](Get-Env 'GAME_PORT' '15636')
+        bannedAccounts = @()
     }
 
     $json = $config | ConvertTo-Json -Depth 10
