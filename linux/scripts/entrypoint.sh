@@ -137,8 +137,6 @@ PYEOF
 
 install_server() {
     echo "[DL]  Installing/Updating Enshrouded server (App $APP_ID)..."
-    # stdbuf -oL forces line-buffered output so Docker logs update in real time.
-    # tr '\r' '\n' converts SteamCMD's carriage-return progress bars into newlines.
     stdbuf -oL "$STEAMCMD" \
         +@sSteamCmdForcePlatformType windows \
         +force_install_dir "$SERVER_DIR" \
@@ -378,7 +376,8 @@ echo "[WINE] Setting Steam registry path to: $WIN_SERVER_DIR"
 WINEDEBUG=-all "$WINE" reg add 'HKCU\Software\Valve\Steam' /v SteamPath /t REG_SZ /d "$WIN_SERVER_DIR" /f 2>/dev/null || true
 WINEDEBUG=-all "$WINE" reg add 'HKLM\Software\Valve\Steam' /v InstallPath /t REG_SZ /d "$WIN_SERVER_DIR" /f 2>/dev/null || true
 
-WINEDEBUG="-all" "$WINE" "$SERVER_EXE" &
+WINEDEBUG="err+all,warn+dll,warn+module,warn+loaddll,fixme-all" "$WINE" "$SERVER_EXE" 2>&1 | \
+    grep -E '(err:|warn:|fixme:|Unhandled|crash|segfault|access|[Ss]team|module|dll)' | head -200 &
 SERVER_PID=$!
 echo "[OK] Server started (PID $SERVER_PID)"
 send_webhook "[UP] **$(get_env NAME 'Enshrouded Server')** is starting..."
