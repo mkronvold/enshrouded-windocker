@@ -162,7 +162,7 @@ function Write-ServerConfig {
 
 function Invoke-ServerInstall {
     Write-Host "[DL]  Installing/Updating Enshrouded server (App $AppId)..."
-    & $SteamCmdExe +login anonymous +force_install_dir $ServerDir +app_update $AppId +quit
+    & $SteamCmdExe +force_install_dir $ServerDir +login anonymous +app_update $AppId validate +quit
     if ($LASTEXITCODE -ne 0) { throw "SteamCMD failed with exit code $LASTEXITCODE" }
     Write-Host "[OK] Server installed/updated."
 }

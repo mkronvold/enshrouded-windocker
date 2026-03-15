@@ -1,4 +1,4 @@
-# enshrouded-windocker
+# enshrouded-docker
 
 A Windows container for running an [Enshrouded](https://store.steampowered.com/app/1203620/Enshrouded/) dedicated server natively — no Wine, no emulation. Built on Windows Server Core with SteamCMD for Windows. All game settings are driven by environment variables so no manual config editing is needed.
 
@@ -20,8 +20,8 @@ A Windows container for running an [Enshrouded](https://store.steampowered.com/a
 ### 1. Clone the repo
 
 ```powershell
-git clone https://github.com/mkronvold/enshrouded-windocker.git
-cd enshrouded-windocker
+git clone https://github.com/mkronvold/enshrouded-docker.git
+cd enshrouded-docker
 ```
 
 ### 2. Create your configuration file
@@ -34,24 +34,31 @@ Edit `.env` with your server name, passwords, Discord webhook URL, and any game 
 
 ### 3. Directory structure
 
-The project expects this layout. The `enshrouded` data folder sits **alongside** the repo so it is never accidentally committed.
+The project expects this layout. The data folders sit **alongside** the repo so they are never accidentally committed.
 
 ```
 C:\docker\
-├── enshrouded-windocker\   ← this repo (code, config)
-│   ├── Dockerfile
+├── enshrouded-docker\   ← this repo (code, config)
+│   ├── windows\
+│   ├── linux\
 │   ├── docker-compose.yml
 │   ├── .env                ← your secrets (gitignored)
-│   ├── .env.example
-│   └── scripts\
-│       └── entrypoint.ps1
-└── enshrouded\             ← server data volume (auto-created on first run)
+│   └── .env.example
+├── enshrouded-windows\     ← Windows container data volume
+│   ├── enshrouded_server.json
+│   ├── savegame\
+│   └── logs\
+└── enshrouded-linux\       ← Linux/Wine container data volume
     ├── enshrouded_server.json
     ├── savegame\
     └── logs\
 ```
 
-> The volume mount in `docker-compose.yml` is `../enshrouded:C:\enshrouded`, so the data folder is always one level up from the repo root.
+> Volume mounts in `docker-compose.yml`:
+> - Windows: `../enshrouded-windows:C:\enshrouded`
+> - Linux:   `../enshrouded-linux:/home/steam/enshrouded`
+>
+> Keeping them separate means logs, saves, and server files never mix between the two variants.
 
 ### 4. Build and start
 
@@ -65,7 +72,7 @@ On first run, SteamCMD will download the Enshrouded dedicated server (~7 GB). Su
 ### 5. Verify
 
 ```powershell
-docker logs enshrouded-windocker-enshrouded-1 --tail 20
+docker logs enshrouded-docker-enshrouded-1 --tail 20
 ```
 
 Look for `Session` output confirming the server is listening.
@@ -193,7 +200,7 @@ Replace `<ROLE>` with `VISITOR`, `HELPER`, `FRIEND`, or `ADMIN`. The Default rol
 
 ### Start the server
 ```powershell
-cd C:\docker\enshrouded-windocker
+cd C:\docker\enshrouded-docker
 docker compose up -d
 ```
 
@@ -209,7 +216,7 @@ docker compose restart
 
 ### View live logs
 ```powershell
-docker logs enshrouded-windocker-enshrouded-1 -f
+docker logs enshrouded-docker-enshrouded-1 -f
 ```
 
 ### Rebuild the image (after Dockerfile or entrypoint changes)

@@ -1,0 +1,19 @@
+## Down
+docker compose -f docker-compose.yml down
+## Up
+docker compose -f docker-compose.yml up -d
+## Restart
+docker compose -f docker-compose.yml down
+docker compose -f docker-compose.yml up -d
+
+# Resources
+## mem
+$t = (Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory; $f = (Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory * 1024; Write-Host "Used: $([math]::Round(($t-$f)/1GB,2))GB | Free: $([math]::Round($f/1GB,2))GB | Total: $([math]::Round($t/1GB,2))GB"
+
+docker exec enshrouded-docker-enshrouded-1 powershell -Command "(Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1MB"
+
+## cpu
+$cpu = Get-CimInstance Win32_Processor; $usage = (Get-Counter '\Processor(_Total)\% Processor Time' -SampleInterval 1 -MaxSamples 1).CounterSamples[0].CookedValue; Write-Host "Cores: $($cpu.NumberOfCores) | Threads: $($cpu.NumberOfLogicalProcessors) | CPU Usage: $([math]::Round($usage, 2))%"
+
+
+docker exec enshrouded-docker-enshrouded-1 powershell -Command "$cpu = Get-CimInstance Win32_Processor; $usage = (Get-Counter '\Processor(_Total)\% Processor Time' -SampleInterval 1 -MaxSamples 1).CounterSamples[0].CookedValue; Write-Host 'Cores: $($cpu.NumberOfCores) | Threads: $($cpu.NumberOfLogicalProcessors) | CPU Usage: $([math]::Round($usage, 2))%'"
