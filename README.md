@@ -4,6 +4,10 @@ A Windows container for running an [Enshrouded](https://store.steampowered.com/a
 
 ---
 
+Note: linux-wine support is not working at this time.
+
+---
+
 ## Requirements
 
 - **Windows 10/11** or **Windows Server 2019/2022** host
