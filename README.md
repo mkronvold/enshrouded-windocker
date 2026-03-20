@@ -4,10 +4,6 @@ A Windows container for running an [Enshrouded](https://store.steampowered.com/a
 
 ---
 
-Note: linux-wine support is not working at this time.
-
----
-
 ## Requirements
 
 - **Windows 10/11** or **Windows Server 2019/2022** host
@@ -38,31 +34,25 @@ Edit `.env` with your server name, passwords, Discord webhook URL, and any game 
 
 ### 3. Directory structure
 
-The project expects this layout. The data folders sit **alongside** the repo so they are never accidentally committed.
+The project expects this layout. The `enshrouded` folder is bind-mounted into the container for persistent data.
 
 ```
 C:\docker\
-├── enshrouded-docker\   ← this repo (code, config)
-│   ├── windows\
-│   ├── linux\
-│   ├── docker-compose.yml
-│   ├── .env                ← your secrets (gitignored)
-│   └── .env.example
-├── enshrouded-windows\     ← Windows container data volume
-│   ├── enshrouded_server.json
-│   ├── savegame\
-│   └── logs\
-└── enshrouded-linux\       ← Linux/Wine container data volume
-    ├── enshrouded_server.json
-    ├── savegame\
-    └── logs\
+└── enshrouded-docker\   ← this repo (code, config, data volume)
+    ├── windows\
+    ├── docker-compose.yml
+    ├── .env                ← your secrets (gitignored)
+    ├── .env.example
+    └── enshrouded\         ← persistent server data
+        ├── enshrouded_server.json
+        ├── savegame\
+        └── logs\
 ```
 
-> Volume mounts in `docker-compose.yml`:
-> - Windows: `../enshrouded-windows:C:\enshrouded`
-> - Linux:   `../enshrouded-linux:/home/steam/enshrouded`
+> Volume mount in `docker-compose.yml`:
+> - `./enshrouded:C:\enshrouded`
 >
-> Keeping them separate means logs, saves, and server files never mix between the two variants.
+> This keeps logs, saves, and server config persistent across container rebuilds.
 
 ### 4. Build and start
 
@@ -247,7 +237,7 @@ docker compose up -d --force-recreate
 
 ## Copying Save Files to the Server
 
-The server's save data lives in `C:\docker\enshrouded\savegame\` on your host.
+The server's save data lives in `C:\docker\enshrouded-docker\enshrouded\savegame\` on your host.
 
 Your **local** Enshrouded save files are located at:
 ```
@@ -263,7 +253,7 @@ Your **local** Enshrouded save files are located at:
 docker compose down
 
 # Copy save files (adjust the source path to your save folder)
-Copy-Item "$env:LOCALAPPDATA\Enshrouded\*" "C:\docker\enshrouded\savegame\" -Recurse -Force
+Copy-Item "$env:LOCALAPPDATA\Enshrouded\*" ".\enshrouded\savegame\" -Recurse -Force
 
 # Start the server
 docker compose up -d
@@ -272,7 +262,7 @@ docker compose up -d
 ### Copy a server save back to your local game
 
 ```powershell
-Copy-Item "C:\docker\enshrouded\savegame\*" "$env:LOCALAPPDATA\Enshrouded\" -Recurse -Force
+Copy-Item ".\enshrouded\savegame\*" "$env:LOCALAPPDATA\Enshrouded\" -Recurse -Force
 ```
 
 > **Note:** Enshrouded save files use the Steam User ID in the folder path. Make sure the save folder you're copying matches the player(s) who will be loading it.
